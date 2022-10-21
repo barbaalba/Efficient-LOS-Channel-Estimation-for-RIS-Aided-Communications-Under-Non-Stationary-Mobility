@@ -1,5 +1,5 @@
 function [UPA_respones,U] = UPA_Evaluate(lambda,M_V,M_H,Azimuth,Elevation,vd,hd)
-%   Evaluate the planar antenna response
+%   Evaluate the planar antenna responses
 %
 %   Inputs:
 %       lambda: Wavelength
