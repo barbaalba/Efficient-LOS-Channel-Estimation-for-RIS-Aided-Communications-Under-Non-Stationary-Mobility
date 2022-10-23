@@ -1,8 +1,10 @@
-close all;
+close all; clc;
 clear;
-
-%Number of horizontal elements in a ULA
-M = 40;
+freq = 28e9; % Central frequency
+lambda = physconst('LightSpeed') / freq; % Wavelength
+SRes = 100; % search resolution
+%UPA Element configuration
+M_H = 16; M_V = 16; M = M_H*M_V;
 elementspacing = 1/4; %In wavelengths
 
 %Set the SNR
@@ -14,17 +16,15 @@ SNR_data = db2pow(SNRdB_data);
 
 %Select angle to the base station (known value)
 varphi_BS = -pi/6;
-
-%Define the array response vector
-arrayresponse = @(phi,M) exp(-1i*2*pi*elementspacing*(0:M-1)'*sin(phi));
+theta_BS = 0;
 
 %Generate channels
-h = arrayresponse(varphi_BS,M);
+h = UPA_Evaluate(lambda,M_V,M_H,varphi_BS,theta_BS,elementspacing,elementspacing);
 Dh = diag(h);
 Dh_angles = diag(h./abs(h));
 
-nbrOfAngleRealizations = 500;
-nbrOfNoiseRealizations = 100;
+nbrOfAngleRealizations = 100;
+nbrOfNoiseRealizations = 10;
 
 
 %Save the rates achieved at different iterations of the algorithm
@@ -34,35 +34,51 @@ rate_LS = zeros(M-1,nbrOfAngleRealizations,nbrOfNoiseRealizations);
 
 
 %Create a uniform grid of beams (like a DFT matrix) to be used at RIS
-beamAngles = asin((-M/2:1:M/2)*2/M);
+ElAngles = asin((-M_V/2:1:M_V/2-1)*2/M_V);
+AzAngles = asin((-M_H/2:1:M_H/2-1)*2/M_H);
+beamAngles = zeros(M,2);
 
+for i = 1:length(ElAngles)
+    figure(1);
+    plot(rad2deg(AzAngles),rad2deg(repelem(ElAngles(i),1,length(AzAngles))),'*');
+    hold on;
+end
 
 for n1 = 1:nbrOfAngleRealizations
-
+    disp(n1);
     %Select angle to the user (to be estimated)
     varphi_UE = rand(1)*2*pi/3-pi/3;
-    g = arrayresponse(varphi_UE,M);
+    theta_UE = -rand(1)*pi/2;
+    g = UPA_Evaluate(lambda,M_V,M_H,varphi_UE,theta_UE,elementspacing,elementspacing);
 
     % Define a fine grid of angle directions to analyze when searching for angle of arrival
-    varphi_range = linspace(-pi/2,pi/2,1000);
-    a_varphi_range = arrayresponse(varphi_range,M);
-
+    varphi_range = linspace(-pi/2,pi/2,SRes);
+    theta_range = linspace(-pi/2,0,SRes);
+    a_varphi_range = zeros(M,SRes,SRes);
+    for i = 1:SRes
+        a_varphi_range(:,:,i) = ...
+            UPA_Evaluate(lambda,M_V,M_H,varphi_range,repelem(theta_range(i),1,SRes),elementspacing,elementspacing);
+    end
 
     %Compute the exact capacity for the system Eq. (3)
     capacity(n1) = log2(1+SNR_data*sum(abs(Dh*g))^2);
 
     for n2 = 1:nbrOfNoiseRealizations
-
+        L = 2;
         %Select which two RIS configurations from the grid of beams to start with
         utilize = false(1,M);
-        utilize(round(M/3)) = true;
-        utilize(round(2*M/3)) = true;
-
+        RISconfigs = zeros(M,L);
+        for l = 1:L
+            redunt = round(l*M/3);
+            utilize(redunt) = true;
+            AzSel = AzAngles(mod(redunt-1,M_H)+1); ElSel = ElAngles(floor(redunt/M_H)+1);
+            figure(1);
+            plot(rad2deg(AzSel),rad2deg(ElSel),'o','MarkerSize',15);
+            RISconfigs(:,l) = UPA_Evaluate(lambda,M_V,M_H,AzSel,ElSel,elementspacing,elementspacing);
+        end
 
         %Define the initial transmission setup
-        RIS_directions = beamAngles(utilize);
-        L = length(RIS_directions);
-        RISconfigs = Dh_angles*arrayresponse(RIS_directions,M); % ????????
+        RISconfigs = Dh_angles*RISconfigs; % ????????
         B = RISconfigs';
 
         %Generate the noise
