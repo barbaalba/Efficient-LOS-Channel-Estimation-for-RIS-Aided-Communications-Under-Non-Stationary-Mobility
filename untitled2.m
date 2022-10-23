@@ -59,7 +59,6 @@ disp(['End to End path loss is ' num2str(mean(UEPL,'all')+PLdB) '[dB]']);
 h = zeros(M_H*M_V,RWL+1,numUE);
 for k=1:numUE
     h(:,:,k) = sqrt(db2pow(-UEPL(k,:))) .*UPA_Evaluate(lambda,M_V,M_H,azimuth(k,:),elevation(k,:),RISspacing,RISspacing);
-
 end
 
 % Enlarge figure to full screen.
