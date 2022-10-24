@@ -1,4 +1,4 @@
-function plotTrajectory(x_t,y_t,Az,El,conf,Xmax,Ymax)
+function plotTrajectory(x_t,y_t,Az,El,conf,Xmax,Ymax,RIS_coor)
 K = size(x_t,1);
 T = size(x_t,2);
 for k = 1:K
@@ -8,6 +8,7 @@ for k = 1:K
     %tiledlayout(2,1);
     subplot(2,2,1);set(gca, 'ydir', 'reverse');xlabel('y');ylabel('x');
     grid on; xlim([-Xmax,Xmax]); ylim([-Ymax,Ymax]); hold on;
+    plot(RIS_coor(2),RIS_coor(1),'Marker','square','MarkerSize',10,'Color','r');
     subplot(2,2,2);xlabel('time');ylabel('azimuth');grid on;ylim([-90,90]);
     xlim([1,T]);hold on;
     subplot(2,2,[3,4]);xlabel('time');ylabel('Elevation');grid on;ylim([-90,0]);
@@ -17,7 +18,10 @@ for k = 1:K
     subplot(2,2,1);
     if strcmp(conf,'discrete')
         hold off;
+        plot(RIS_coor(2),RIS_coor(1),'Marker','square','MarkerSize',10,'Color','r');
+        hold on;
         plot(y_t(k,t-1:t),x_t(k,t-1:t),'Color','b'); set(gca, 'ydir', 'reverse');xlabel('y');ylabel('x');xlim([-Xmax,Xmax]); ylim([-Ymax,Ymax]);grid on;
+        hold off;
     else
         plot(y_t(k,1:t),x_t(k,1:t),'Color','b');
     end
