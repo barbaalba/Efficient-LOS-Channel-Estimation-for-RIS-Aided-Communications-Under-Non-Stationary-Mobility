@@ -4,7 +4,7 @@ freq = 28e9; % Central frequency
 lambda = physconst('LightSpeed') / freq; % Wavelength
 SRes = 100; % search resolution
 %UPA Element configuration
-M_H = 16; M_V = 16; M = M_H*M_V;
+M_H = 8; M_V = 8; M = M_H*M_V;
 elementspacing = 1/4; %In wavelengths
 
 %Set the SNR
@@ -36,13 +36,18 @@ rate_LS = zeros(M-1,nbrOfAngleRealizations,nbrOfNoiseRealizations);
 %Create a uniform grid of beams (like a DFT matrix) to be used at RIS
 ElAngles = asin((-M_V/2:1:M_V/2-1)*2/M_V);
 AzAngles = asin((-M_H/2:1:M_H/2-1)*2/M_H);
-beamAngles = zeros(M,2);
+beamAngles = zeros(M,2); % Elevation-Azimuth pair
+for i = 1:length(ElAngles)
+    for j = 1:length(AzAngles)
+        beamAngles(length(AzAngles)*(i-1)+j,:) = [ElAngles(i) AzAngles(j)];
+    end
+end
 
 % plot the Configured angles grid
-for i = 1:length(ElAngles)
+for i = 1:length(beamAngles)
     figure(1);
     grid on;
-    plot(rad2deg(AzAngles),rad2deg(repelem(ElAngles(i),1,length(AzAngles))),'*','MarkerSize',10,'Color','b');
+    plot(rad2deg(beamAngles(i,2)),rad2deg(beamAngles(i,1)),'*','MarkerSize',10,'Color','b');
     hold on;
 end
 
@@ -104,15 +109,17 @@ for n1 = 1:nbrOfAngleRealizations
 %             end
 
             %Compute the ML utility function for all potential angles - This new version is 50 times faster!
-            utilityfunction = abs(y'*B*Dh*a_varphi_range).^2./sum(abs(B*Dh*a_varphi_range).^2,1);
-
-
+            % Each row is for one elevation angle
+            utilityfunction = zeros(SRes,SRes);
+            for i = 1:SRes
+                utilityfunction(i,:) = abs(y'*B*Dh*a_varphi_range(:,:,i)).^2./sum(abs(B*Dh*a_varphi_range(:,:,i)).^2,1);
+            end
             %Extract the angle estimate
-            [~,maxind] = max(utilityfunction);
-
+            [~,maxind] = max(utilityfunction,[],'all');
+            [Elidx,Azidx] = ind2sub([SRes,SRes],maxind);
 
             %Estimate the RIS configuration that (approximately) maximizes the SNR
-            RISconfig = angle(Dh*arrayresponse(varphi_range(maxind),M));
+            RISconfig = angle(Dh*UPA_Evaluate(lambda,M_V,M_H,varphi_range(Azidx),theta_range(Elidx),elementspacing,elementspacing));
 
             %Compute the corresponding achievable rate
             rate_proposed(itr,n1,n2) = log2(1+SNR_data*abs(exp(-1i*RISconfig).'*Dh*g).^2);
