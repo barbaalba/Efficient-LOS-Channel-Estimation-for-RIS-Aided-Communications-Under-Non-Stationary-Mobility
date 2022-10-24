@@ -23,7 +23,7 @@ h = UPA_Evaluate(lambda,M_V,M_H,varphi_BS,theta_BS,elementspacing,elementspacing
 Dh = diag(h);
 Dh_angles = diag(h./abs(h));
 
-nbrOfAngleRealizations = 100;
+nbrOfAngleRealizations = 2;
 nbrOfNoiseRealizations = 10;
 
 
@@ -62,7 +62,7 @@ for n1 = 1:nbrOfAngleRealizations
     varphi_range = linspace(-pi/2,pi/2,SRes);
     theta_range = linspace(-pi/2,0,SRes);
     a_varphi_range = zeros(M,SRes,SRes); % [M,Azimuth,Elevation]
-    for i = 1:SRes
+    parfor i = 1:SRes
         a_varphi_range(:,:,i) = ...
             UPA_Evaluate(lambda,M_V,M_H,varphi_range,repelem(theta_range(i),1,SRes),elementspacing,elementspacing);
     end
@@ -71,22 +71,16 @@ for n1 = 1:nbrOfAngleRealizations
     capacity(n1) = log2(1+SNR_data*sum(abs(Dh*g))^2);
 
     for n2 = 1:nbrOfNoiseRealizations
-        L = 2;
+
         %Select which two RIS configurations from the grid of beams to start with
-        utilize = false(1,M);
-        RISconfigs = zeros(M,L);
-        for l = 1:L
-            redunt = round(l*M/3);
-            utilize(redunt) = true;
-            AzSel = AzAngles(mod(redunt-1,M_H)+1); ElSel = ElAngles(floor(redunt/M_H)+1);
-            % update the plot with which angles are selected
-            figure(1);
-            plot(rad2deg(AzSel),rad2deg(ElSel),'o','MarkerSize',15,'Color','r','LineWidth',2);
-            RISconfigs(:,l) = UPA_Evaluate(lambda,M_V,M_H,AzSel,ElSel,elementspacing,elementspacing);
-        end
+        utilize = false(M,1);
+        utilize(round(M/3)) = true;
+        utilize(round(2*M/3)) = true;
 
         %Define the initial transmission setup
-        RISconfigs = Dh_angles*RISconfigs; % ????????
+        RIS_directions = beamAngles(utilize,:);
+        L = length(RIS_directions); 
+        RISconfigs = Dh_angles*UPA_Evaluate(lambda,M_V,M_H,RIS_directions(:,2),RIS_directions(:,1),elementspacing,elementspacing);
         B = RISconfigs';
 
         %Generate the noise
@@ -111,7 +105,7 @@ for n1 = 1:nbrOfAngleRealizations
             %Compute the ML utility function for all potential angles - This new version is 50 times faster!
             % Each row is for one elevation angle
             utilityfunction = zeros(SRes,SRes);
-            for i = 1:SRes
+            parfor i = 1:SRes
                 utilityfunction(i,:) = abs(y'*B*Dh*a_varphi_range(:,:,i)).^2./sum(abs(B*Dh*a_varphi_range(:,:,i)).^2,1);
             end
             %Extract the angle estimate
@@ -129,24 +123,24 @@ for n1 = 1:nbrOfAngleRealizations
             if itr < M-1
 
                 %Find which angles in the grid-of-beams that haven't been used
-                unusedAngles = beamAngles(utilize==false);
+                unusedAngles = beamAngles(utilize==false,:);
 
                 %Guess what the channel would be with the different beams
-                guessOnAngles = Dh*arrayresponse(unusedAngles,M);
+                guessOnAngles = Dh*UPA_Evaluate(lambda,M_V,M_H,unusedAngles(:,2),unusedAngles(:,1),elementspacing,elementspacing);
 
 
-                %Find which of the guessed channels that matches best with the
+                %Find which of the guessed channels matches best with the
                 %currently best RIS configuration
 
-                closestBeam = abs(exp(-1i*RISconfig).'*guessOnAngles); %Emil's suggestion
+                closestBeam = abs(exp(-1i*RISconfig).'*guessOnAngles); 
                 [~,bestUnusedBeam] = max(closestBeam);
 
 
                 %Add a pilot transmission using the new RIS configuration
-                newAngle = find(unusedAngles(bestUnusedBeam) == beamAngles);
+                [~,newAngle] = ismember(unusedAngles(bestUnusedBeam,:),beamAngles,"rows");
                 utilize(newAngle) = true;
-                RIS_directions = beamAngles(utilize);
-                RISconfigs = Dh_angles*arrayresponse(RIS_directions,M);
+                RIS_directions = beamAngles(utilize,:);
+                RISconfigs = Dh_angles*UPA_Evaluate(lambda,M_V,M_H,RIS_directions(:,2),RIS_directions(:,1),elementspacing,elementspacing);
                 B = RISconfigs';
             end
 
@@ -157,7 +151,7 @@ for n1 = 1:nbrOfAngleRealizations
         randomOrdering = randperm(M);
 
         %Go through iterations by adding extra RIS configurations in the estimation
-        for itr = 1:M-1
+        parfor itr = 1:M-1
 
             B_LS = transpose(DFT(:,randomOrdering(1:itr+1)));
 
