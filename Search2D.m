@@ -38,9 +38,11 @@ ElAngles = asin((-M_V/2:1:M_V/2-1)*2/M_V);
 AzAngles = asin((-M_H/2:1:M_H/2-1)*2/M_H);
 beamAngles = zeros(M,2);
 
+% plot the Configured angles grid
 for i = 1:length(ElAngles)
     figure(1);
-    plot(rad2deg(AzAngles),rad2deg(repelem(ElAngles(i),1,length(AzAngles))),'*');
+    grid on;
+    plot(rad2deg(AzAngles),rad2deg(repelem(ElAngles(i),1,length(AzAngles))),'*','MarkerSize',10,'Color','b');
     hold on;
 end
 
@@ -72,8 +74,9 @@ for n1 = 1:nbrOfAngleRealizations
             redunt = round(l*M/3);
             utilize(redunt) = true;
             AzSel = AzAngles(mod(redunt-1,M_H)+1); ElSel = ElAngles(floor(redunt/M_H)+1);
+            % update the plot with which angles are selected
             figure(1);
-            plot(rad2deg(AzSel),rad2deg(ElSel),'o','MarkerSize',15);
+            plot(rad2deg(AzSel),rad2deg(ElSel),'o','MarkerSize',15,'Color','r','LineWidth',2);
             RISconfigs(:,l) = UPA_Evaluate(lambda,M_V,M_H,AzSel,ElSel,elementspacing,elementspacing);
         end
 
