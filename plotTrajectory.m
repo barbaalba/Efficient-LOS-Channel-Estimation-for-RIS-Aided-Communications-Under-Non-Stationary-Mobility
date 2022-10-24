@@ -18,11 +18,13 @@ for k = 1:K
     subplot(2,2,1);
     if strcmp(conf,'discrete')
         hold off;
-        plot(RIS_coor(2),RIS_coor(1),'Marker','square','MarkerSize',10,'Color','r');
+        plot(RIS_coor(2),RIS_coor(1),'Marker','square','MarkerSize',10,'Color','r'); % RIS Location
         hold on;
+        % The user movement
         plot(y_t(k,t-1:t),x_t(k,t-1:t),'Color','b'); set(gca, 'ydir', 'reverse');xlabel('y');ylabel('x');xlim([-Xmax,Xmax]); ylim([-Ymax,Ymax]);grid on;
         hold off;
     else
+        % the user trajectory
         plot(y_t(k,1:t),x_t(k,1:t),'Color','b');
     end
     %nexttile(2);
