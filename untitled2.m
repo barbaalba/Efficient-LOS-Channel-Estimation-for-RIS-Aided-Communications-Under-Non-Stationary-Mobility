@@ -15,7 +15,7 @@ numUE = 10; % number of users
 RWL = 1000;  % Length of the random walk
 plt = true; % To plot the trajectory
 pltconf = 'discrete'; % 'continous' or 'discrete'
-RIS_coor = [-Ymax,0,2]; % the RIS is located at the end of the room 
+RIS_coor = [-Xmax,0,2]; % the RIS is located at the end of the room 
 z_t = repelem(1.5,numUE,RWL+1); % Z-coordinate of the user(does not change)
 % channel parameters (LOS mmWave) alpha + 10*beta*log10(d)
 alpha = 61.4; % path loss reference in 1 (m) distance
@@ -40,7 +40,7 @@ azimuth = atan(azimuth);
 elevation =  d_z ./ d_t;
 elevation = asin(elevation);
 if plt
-    plotTrajectory(x_t,y_t,azimuth,elevation,pltconf,Xmax,Ymax);
+    plotTrajectory(x_t,y_t,azimuth,elevation,pltconf,Xmax,Ymax,RIS_coor);
 end
 
 %% Direct Channel model 
