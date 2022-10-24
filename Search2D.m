@@ -61,7 +61,7 @@ for n1 = 1:nbrOfAngleRealizations
     % Define a fine grid of angle directions to analyze when searching for angle of arrival
     varphi_range = linspace(-pi/2,pi/2,SRes);
     theta_range = linspace(-pi/2,0,SRes);
-    a_varphi_range = zeros(M,SRes,SRes);
+    a_varphi_range = zeros(M,SRes,SRes); % [M,Azimuth,Elevation]
     for i = 1:SRes
         a_varphi_range(:,:,i) = ...
             UPA_Evaluate(lambda,M_V,M_H,varphi_range,repelem(theta_range(i),1,SRes),elementspacing,elementspacing);
