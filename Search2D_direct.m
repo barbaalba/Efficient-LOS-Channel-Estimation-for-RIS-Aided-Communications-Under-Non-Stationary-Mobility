@@ -30,8 +30,8 @@ Dh = diag(h);
 Dh_angles = diag(h./abs(h));
 d = sqrt(var_amp_d) * exp (1i*var_phas_d); %direct path
 
-nbrOfAngleRealizations = 1;
-nbrOfNoiseRealizations = 1;
+nbrOfAngleRealizations = 10;
+nbrOfNoiseRealizations = 10;
 
 
 %Save the rates achieved at different iterations of the algorithm
@@ -162,9 +162,8 @@ for n1 = 1:nbrOfAngleRealizations
                 [~,newAngle] = ismember(unusedAngles(bestUnusedBeam,:),beamAngles,"rows");
                 utilize(newAngle) = true;
                 RIS_directions = beamAngles(utilize,:);
-                phase_shifts = angle (Dh_angles*exp(1i * var_phas_g_est)*UPA_Evaluate(lambda,M_V,M_H,RIS_directions(:,2),RIS_directions(:,1),...
-                    elementspacing,elementspacing)) - var_phas_d_est;
-                RISconfigs = exp (1i * phase_shifts);
+                RISconfigs = Dh_angles*UPA_Evaluate(lambda,M_V,M_H,RIS_directions(:,2),RIS_directions(:,1),...
+                    elementspacing,elementspacing);
                 B = RISconfigs';
             end
 
