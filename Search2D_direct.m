@@ -48,7 +48,7 @@ for i = 1:length(ElAngles)
     beamAngles ((i-1)*length(AzAngles)+1: i*length(AzAngles),:) = [repelem(ElAngles(i),length(AzAngles),1) AzAngles'];
 end
 
-% plot the Configured angles grid
+%plot the Configured angles grid
 % for i = 1:length(beamAngles)
 %     figure(1);
 %     grid on;
@@ -65,7 +65,7 @@ for n1 = 1:nbrOfAngleRealizations
 
     % Define a fine grid of angle directions to analyze when searching for angle of arrival
     varphi_range = linspace(-pi/2,pi/2,SRes);
-    theta_range = linspace(-pi/2,0,SRes);
+    theta_range = linspace(-pi/2,pi/2,SRes);
     a_varphi_range = zeros(M,SRes,SRes); % [M,Azimuth,Elevation]
     parfor i = 1:SRes
         a_varphi_range(:,:,i) = ...
@@ -93,7 +93,7 @@ for n1 = 1:nbrOfAngleRealizations
 
 
         %Go through iterations by adding extra RIS configurations in the estimation
-        for itr = 1:5
+        for itr = 1:M-1
            %Generate the received signal
             y =  sqrt(SNR_pilot)*(B*Dh*g + d) + noise(1:itr+1,1);
 
@@ -106,7 +106,7 @@ for n1 = 1:nbrOfAngleRealizations
                 for i = 1:SRes
                     utility_num(i,:) = abs(y' * (eye(itr+1) - (itr+1)^-1 * ones(itr+1,itr+1))* ...
                         B*Dh*a_varphi_range(:,:,i)).^2;
-                    utility_den(i,:) = sum(abs(B*Dh*a_varphi_range(:,:,i).^2),1) - (itr+1)^-1 * ...
+                    utility_den(i,:) = sum(abs(B*Dh*a_varphi_range(:,:,i)).^2,1) - (itr+1)^-1 * ...
                         abs(ones(1,itr+1)*B*Dh*a_varphi_range(:,:,i)).^2;
                 end
            
@@ -147,7 +147,7 @@ for n1 = 1:nbrOfAngleRealizations
                 unusedAngles = beamAngles(utilize==false,:);
 
                 %Guess what the channel would be with the different beams
-                guessOnAngles = Dh*exp(1i * var_phas_g_est)*UPA_Evaluate(lambda,M_V,M_H,unusedAngles(:,2),unusedAngles(:,1),elementspacing,elementspacing);
+                guessOnAngles = Dh*sqrt(var_amp_g_est)*exp(1i * var_phas_g_est)*UPA_Evaluate(lambda,M_V,M_H,unusedAngles(:,2),unusedAngles(:,1),elementspacing,elementspacing);
                
 
 
