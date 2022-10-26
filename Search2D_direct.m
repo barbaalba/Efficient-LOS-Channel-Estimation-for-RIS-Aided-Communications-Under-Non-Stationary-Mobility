@@ -8,7 +8,7 @@ M_H = 8; M_V = 8; M = M_H*M_V;
 elementspacing = 1/4; %In wavelengths
 
 %Set the SNR
-SNRdB_pilot = 10;
+SNRdB_pilot = 0;
 SNR_pilot = db2pow(SNRdB_pilot);
 
 SNRdB_data = 0;
@@ -18,19 +18,12 @@ SNR_data = db2pow(SNRdB_data);
 varphi_BS = -pi/6;
 theta_BS = 0;
 
-%Select the amplitude and phase of g and d
-var_amp_g=1;
-var_amp_d=0.1;
-var_phas_g=pi/3;
-var_phas_d=pi/6;
-
 %Generate channels
 h = UPA_Evaluate(lambda,M_V,M_H,varphi_BS,theta_BS,elementspacing,elementspacing);
 Dh = diag(h);
 Dh_angles = diag(h./abs(h));
-d = sqrt(var_amp_d) * exp (1i*var_phas_d); %direct path
 
-nbrOfAngleRealizations = 10;
+nbrOfAngleRealizations = 100;
 nbrOfNoiseRealizations = 10;
 
 
@@ -61,7 +54,12 @@ for n1 = 1:nbrOfAngleRealizations
     %Select angle to the user (to be estimated)
     varphi_UE = rand(1)*2*pi/3-pi/3;
     theta_UE = -rand(1)*pi/2;
+    var_phas_g = rand * 2* pi;
+    var_amp_g= rand*10+1;
     g = sqrt(var_amp_g) * exp (1i*var_phas_g) * UPA_Evaluate(lambda,M_V,M_H,varphi_UE,theta_UE,elementspacing,elementspacing);
+    var_phas_d= rand * 2* pi;
+    var_amp_d= rand;
+    d = sqrt(var_amp_d) * exp (1i*var_phas_d); %direct path
 
     % Define a fine grid of angle directions to analyze when searching for angle of arrival
     varphi_range = linspace(-pi/2,pi/2,SRes);
