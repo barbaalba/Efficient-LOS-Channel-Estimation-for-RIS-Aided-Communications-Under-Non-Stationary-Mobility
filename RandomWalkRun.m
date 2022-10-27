@@ -11,8 +11,9 @@ disp(['Fraunhofer distance is ' num2str(d_fraun) ' (m)']);
 d_BSRIS = 30;
 Xmax = 5; % Room size = [-Xmax, Xmax]
 Ymax = 5; % Room size = [-Ymax, Ymax]
-numUE = 10; % number of users
-RWL = 1000;  % Length of the random walk
+numUE = 1; % number of users
+RWL = 100;  % Length of the random walk
+Speed = 0.25; % meter per second movement
 plt = true; % To plot the trajectory
 pltconf = 'discrete'; % 'continous' or 'discrete'
 RIS_coor = [-Xmax,0,2]; % the RIS is located at the end of the room 
@@ -25,7 +26,7 @@ noisepow = -96; % [dBm]
 txpow = 0; % [dBm]
 %% Extract Azimuth-Elevation-Distance
 % Random walk
-[x_t,y_t] = randomwalk(numUE,RWL,Xmax,Ymax);
+[x_t,y_t] = randomwalk(numUE,RWL,Xmax,Ymax,Speed);
 
 d_x = x_t-RIS_coor(1);
 d_y = y_t-RIS_coor(2);
