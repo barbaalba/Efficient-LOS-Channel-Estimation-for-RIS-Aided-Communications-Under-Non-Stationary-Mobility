@@ -8,7 +8,7 @@ M_H = 8; M_V = 8; M = M_H*M_V;
 elementspacing = 1/4; %In wavelengths
 
 %Set the SNR
-SNRdB_pilot = 0;
+SNRdB_pilot = 10;
 SNR_pilot = db2pow(SNRdB_pilot);
 
 SNRdB_data = 0;
@@ -23,7 +23,7 @@ h = UPA_Evaluate(lambda,M_V,M_H,varphi_BS,theta_BS,elementspacing,elementspacing
 Dh = diag(h);
 Dh_angles = diag(h./abs(h));
 
-nbrOfAngleRealizations = 100;
+nbrOfAngleRealizations = 10;
 nbrOfNoiseRealizations = 10;
 
 
@@ -172,27 +172,27 @@ for n1 = 1:nbrOfAngleRealizations
         end
 
         %LS estimation
-%         DFT = fft(eye(M));
-%         randomOrdering = randperm(M);
-% 
-%         %Go through iterations by adding extra RIS configurations in the estimation
-%         parfor itr = 1:M-1
-% 
-%             B_LS = transpose(DFT(:,randomOrdering(1:itr+1)));
-% 
-%             %Generate the received signal
-%             y = sqrt(SNR_pilot)*B_LS*Dh*g + noise(1:itr+1,1);
-% 
-%             %Compute LS estimate without parametrization
-%             g_LS = (Dh\(pinv(B_LS)*y))/sqrt(SNR_pilot);
-% 
-%             %Estimate the RIS configuration that (approximately) maximizes the SNR
-%             RISconfig = angle(Dh*g_LS);
-% 
-%             %Compute the corresponding achievable rate
-%             rate_LS(itr,n1,n2) = log2(1+SNR_data*abs(exp(-1i*RISconfig).'*Dh*g).^2);
-% 
-%         end
+        DFT = fft(eye(M+1));
+        randomOrdering = randperm(M+1);
+        
+        %Go through iterations by adding extra RIS configurations in the estimation
+        for itr = 1:M-1
+
+            B_LS = transpose(DFT(:,randomOrdering(1:itr+1)));
+
+            v = [d;Dh*g]; % cascaded channel and direct path 
+            y = sqrt(SNR_pilot)*B_LS*v + noise(1:itr+1,1);
+             
+            %Compute LS estimate without parametrization
+            v_LS = pinv(B_LS)*y/sqrt(SNR_pilot);
+
+            %Estimate the RIS configuration that (approximately) maximizes the SNR
+            RISconfig =  angle(v_LS(2:end)) - angle(v_LS(1));
+
+            %Compute the corresponding achievable rate
+            rate_LS(itr,n1,n2) = log2(1+SNR_data*abs(exp(-1i*RISconfig).'*Dh*g+d).^2);
+
+        end
 
     end
 
@@ -205,10 +205,10 @@ figure;
 hold on; box on; grid on;
 plot(2:M,mean(capacity)*ones(M-1,1),'r:','LineWidth',2)
 plot(2:M,mean(mean(rate_proposed,3),2),'k-','LineWidth',2)
-%plot(2:M,mean(mean(rate_LS,3),2),'b-.','LineWidth',2)
+plot(2:M,mean(mean(rate_LS,3),2),'b-.','LineWidth',2)
 ax = gca;
 xlabel('Number of pilot transmissions','Interpreter','latex');
 ylabel('Average rate (bits/s/Hz)','Interpreter','latex');
-%legend({'Perfect CSI','Proposed ML estimator','Least-squares estimator'},'Interpreter','latex','Location','SouthEast');
+legend({'Perfect CSI','Proposed ML estimator','Least-squares estimator'},'Interpreter','latex','Location','SouthEast');
 set(gca,'fontsize',16);
 ylim([0 ceil(max(capacity))+0.5]);
