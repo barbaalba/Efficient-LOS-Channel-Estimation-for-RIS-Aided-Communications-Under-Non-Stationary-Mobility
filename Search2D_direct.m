@@ -51,20 +51,25 @@ end
 
 for n1 = 1:nbrOfAngleRealizations
     disp(n1);
-    %Select angle to the user (to be estimated)
-    varphi_UE = rand(1)*2*pi/3-pi/3;
-    theta_UE = -rand(1)*pi/2;
+
+    %Select the parameters to be estimated 
+    %channel g (UE to RIS)
+    varphi_UE = rand*2*pi/3-pi/3;
+    theta_UE = -rand*pi/2;
     var_phas_g = rand * 2* pi;
     var_amp_g= rand*10+1;
     g = sqrt(var_amp_g) * exp (1i*var_phas_g) * UPA_Evaluate(lambda,M_V,M_H,varphi_UE,theta_UE,elementspacing,elementspacing);
+    %channel d (UE to BS)   
     var_phas_d= rand * 2* pi;
     var_amp_d= rand;
-    d = sqrt(var_amp_d) * exp (1i*var_phas_d); %direct path
+    d = sqrt(var_amp_d) * exp (1i*var_phas_d); 
 
     % Define a fine grid of angle directions to analyze when searching for angle of arrival
     varphi_range = linspace(-pi/2,pi/2,SRes);
     theta_range = linspace(-pi/2,pi/2,SRes);
     a_varphi_range = zeros(M,SRes,SRes); % [M,Azimuth,Elevation]
+
+    % obtain the array response vectors for all azimuth-elevation pairs
     parfor i = 1:SRes
         a_varphi_range(:,:,i) = ...
             UPA_Evaluate(lambda,M_V,M_H,varphi_range,repelem(theta_range(i),1,SRes),elementspacing,elementspacing);
@@ -95,10 +100,9 @@ for n1 = 1:nbrOfAngleRealizations
            %Generate the received signal
             y =  sqrt(SNR_pilot)*(B*Dh*g + d) + noise(1:itr+1,1);
 
-
             %Compute the ML utility function for all potential angle pairs
-             utility_num = zeros(SRes,SRes);
-             utility_den = zeros(SRes,SRes);
+             utility_num = zeros(SRes,SRes); %numerator of the utility function
+             utility_den = zeros(SRes,SRes); %denominator of the utility function
              
               % Each row is for one elevation angle
                 for i = 1:SRes
