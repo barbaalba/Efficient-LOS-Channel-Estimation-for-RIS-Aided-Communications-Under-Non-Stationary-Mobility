@@ -30,7 +30,7 @@ nbrOfNoiseRealizations = 10;
 %Save the rates achieved at different iterations of the algorithm
 capacity = zeros(1,nbrOfAngleRealizations);
 rate_proposed = zeros(M-1,nbrOfAngleRealizations,nbrOfNoiseRealizations);
-%rate_LS = zeros(M-1,nbrOfAngleRealizations,nbrOfNoiseRealizations);
+rate_LS = zeros(M-1,nbrOfAngleRealizations,nbrOfNoiseRealizations);
 
 
 %Create a uniform grid of beams (like a DFT matrix) to be used at RIS
