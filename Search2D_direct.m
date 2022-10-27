@@ -42,12 +42,12 @@ for i = 1:length(ElAngles)
 end
 
 %plot the Configured angles grid
-% for i = 1:length(beamAngles)
-%     figure(1);
-%     grid on;
-%     plot(rad2deg(beamAngles(i,2)),rad2deg(beamAngles(i,1)),'*','MarkerSize',10,'Color','b');
-%     hold on;
-% end
+for i = 1:length(beamAngles)
+    figure(1);
+    grid on;
+    plot(rad2deg(beamAngles(i,2)),rad2deg(beamAngles(i,1)),'*','MarkerSize',10,'Color','b');
+    hold on;
+end
 
 for n1 = 1:nbrOfAngleRealizations
     disp(n1);
