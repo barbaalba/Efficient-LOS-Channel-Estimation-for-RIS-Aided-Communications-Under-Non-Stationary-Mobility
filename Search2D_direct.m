@@ -37,8 +37,10 @@ rate_LS = zeros(M-1,nbrOfAngleRealizations,nbrOfNoiseRealizations);
 ElAngles = asin((-M_V/2:1:M_V/2-1)*2/M_V);
 AzAngles = asin((-M_H/2:1:M_H/2-1)*2/M_H);
 beamAngles = zeros(M,2); % Elevation-Azimuth pair
+beamresponses = zeros(M,M);
 for i = 1:length(ElAngles)
     beamAngles ((i-1)*length(AzAngles)+1: i*length(AzAngles),:) = [repelem(ElAngles(i),length(AzAngles),1) AzAngles'];
+    beamresponses(:,(i-1)*length(AzAngles)+1: i*length(AzAngles)) = UPA_Evaluate(lambda,M_V,M_H,AzAngles,repelem(ElAngles(i),1,length(AzAngles)),elementspacing,elementspacing);
 end
 
 %plot the Configured angles grid
@@ -55,14 +57,14 @@ for n1 = 1:nbrOfAngleRealizations
     %Select the parameters to be estimated 
     %channel g (UE to RIS)
     varphi_UE = rand*2*pi/3-pi/3;
-    theta_UE = -rand*pi/2;
+    theta_UE = -rand*pi/3;
     var_phas_g = rand * 2* pi;
-    var_amp_g= rand*10+1;
+    var_amp_g= rand * 2 + 8; % [8 - 10]
     g = sqrt(var_amp_g) * exp (1i*var_phas_g) * UPA_Evaluate(lambda,M_V,M_H,varphi_UE,theta_UE,elementspacing,elementspacing);
     %channel d (UE to BS)   
     var_phas_d= rand * 2* pi;
-    var_amp_d= rand;
-    d = sqrt(var_amp_d) * exp (1i*var_phas_d); 
+    var_amp_d= 10; % [10-11]
+    d = sqrt(var_amp_d) * (randn + 1i*randn); % CN(0,10)
 
     % Define a fine grid of angle directions to analyze when searching for angle of arrival
     varphi_range = linspace(-pi/2,pi/2,SRes);
