@@ -151,14 +151,14 @@ for n1 = 1:nbrOfAngleRealizations
                 unusedAngles = beamAngles(utilize==false,:);
 
                 %Guess what the channel would be with the different beams
-                guessOnAngles = Dh*sqrt(var_amp_g_est)*exp(1i * var_phas_g_est)*UPA_Evaluate(lambda,M_V,M_H,unusedAngles(:,2),unusedAngles(:,1),elementspacing,elementspacing);
+                guessOnAngles = Dh*UPA_Evaluate(lambda,M_V,M_H,unusedAngles(:,2),unusedAngles(:,1),elementspacing,elementspacing);
                
 
-
+                
                 %Find which of the guessed channels matches best with the
                 %currently best RIS configuration
 
-                closestBeam = abs(exp(-1i*RISconfig).'*guessOnAngles + d_est); 
+                closestBeam = abs(exp(-1i*RISconfig).'*guessOnAngles); 
                 [~,bestUnusedBeam] = max(closestBeam);
 
 
