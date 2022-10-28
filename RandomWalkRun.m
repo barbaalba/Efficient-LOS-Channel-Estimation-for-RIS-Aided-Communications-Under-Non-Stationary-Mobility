@@ -12,7 +12,7 @@ d_BSRIS = 30;
 Xmax = 5; % Room size = [-Xmax, Xmax]
 Ymax = 5; % Room size = [-Ymax, Ymax]
 numUE = 1; % number of users
-RWL = 100;  % Length of the random walk
+RWL = 200;  % Length of the random walk
 Speed = 0.25; % meter per second movement
 plt = true; % To plot the trajectory
 pltconf = 'discrete'; % 'continous' or 'discrete'
@@ -33,6 +33,7 @@ d_y = y_t-RIS_coor(2);
 d_z = z_t-RIS_coor(3);
 % Distance to RIS
 d_t = sqrt(d_x.^2+d_y.^2+d_z.^2);
+Cph = exp(-1i*2*pi*d_t/lambda);
 % report the near-field percentage
 sum(d_t < d_fraun,'all')/RWL/numUE*100
 % Azimuth 
@@ -43,7 +44,8 @@ elevation = asin(elevation);
 if plt
     plotTrajectory(x_t,y_t,azimuth,elevation,pltconf,Xmax,Ymax,RIS_coor);
 end
-
+% uncomment it to save the required data
+save('slow.mat','x_t','y_t','azimuth','elevation','Cph'); 
 %% Direct Channel model 
 g_d = -130; % the NLOS direct channel gain
 h_d = sqrt(db2pow(g_d)) * (randn+1i*randn); % direct channel complex gain
