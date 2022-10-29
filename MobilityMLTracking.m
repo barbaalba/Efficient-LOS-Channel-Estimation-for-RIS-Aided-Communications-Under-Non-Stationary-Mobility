@@ -62,7 +62,6 @@ for n1 = 1:nbrOfAngleRealizations
     %channel g (UE to RIS)
     varphi_UE = azimuth(n1);
     theta_UE = elevation(n1);
-    %var_phas_g = ;
     var_amp_g= 10;
     g = sqrt(var_amp_g) * Cph(n1) * UPA_Evaluate(lambda,M_V,M_H,varphi_UE,theta_UE,elementspacing,elementspacing);
 
