@@ -8,10 +8,10 @@ M_H = 8; M_V = 8; M = M_H*M_V;
 elementspacing = 1/4; %In wavelengths
 
 %Set the SNR
-SNRdB_pilot = -10;
+SNRdB_pilot = 0;
 SNR_pilot = db2pow(SNRdB_pilot);
 
-SNRdB_data = 0;
+SNRdB_data = -10;
 SNR_data = db2pow(SNRdB_data);
 
 %Select angle to the base station (known value)
@@ -22,12 +22,9 @@ theta_BS = 0;
 h = UPA_Evaluate(lambda,M_V,M_H,varphi_BS,theta_BS,elementspacing,elementspacing);
 Dh = diag(h);
 Dh_angles = diag(h./abs(h));
-%channel d (UE to BS)   
-var_amp_d= 10;
-d = sqrt(var_amp_d) * (randn + 1i*randn); % CN(0,10)
 
 nbrOfAngleRealizations = 200;
-nbrOfNoiseRealizations = 10;
+nbrOfNoiseRealizations = 100;
 
 
 %Save the rates achieved at different iterations of the algorithm
@@ -47,14 +44,14 @@ for i = 1:length(ElAngles)
 end
 
 %plot the Configured angles grid
-for i = 1:length(beamAngles)
-    figure(1);
-    grid on;
-    plot(rad2deg(beamAngles(i,2)),rad2deg(beamAngles(i,1)),'*','MarkerSize',10,'Color','b');
-    hold on;
-end
-idx = zeros(1,nbrOfAngleRealizations);
-idx2 = zeros(1,nbrOfAngleRealizations);
+% for i = 1:length(beamAngles)
+%     figure(1);
+%     grid on;
+%     plot(rad2deg(beamAngles(i,2)),rad2deg(beamAngles(i,1)),'*','MarkerSize',10,'Color','b');
+%     hold on;
+% end
+idx = zeros(nbrOfAngleRealizations,nbrOfNoiseRealizations);
+idx2 = zeros(nbrOfAngleRealizations,nbrOfNoiseRealizations);
 for n1 = 1:nbrOfAngleRealizations
     disp(n1);
 
@@ -62,10 +59,15 @@ for n1 = 1:nbrOfAngleRealizations
     %channel g (UE to RIS)
     varphi_UE = azimuth(n1);
     theta_UE = elevation(n1);
-    var_amp_g= 10; 
+    var_amp_g= 1; 
     g = sqrt(var_amp_g) * Cph(n1) * UPA_Evaluate(lambda,M_V,M_H,varphi_UE,theta_UE,elementspacing,elementspacing);
+    
+    %channel d (UE to BS)   
+    var_amp_d= 1;
+    d = sqrt(var_amp_d) * (randn + 1i*randn); % CN(0,1)
 
-    % Define a fine grid of angle directions to analyze when searching for angle of arrival
+    % Define a fine grid of angle directions to analyze when searching for
+    % angle of arrival (Estimation)
     varphi_range = linspace(-pi/2,pi/2,SRes);
     theta_range = linspace(-pi/2,pi/2,SRes);
     a_varphi_range = zeros(M,SRes,SRes); % [M,Azimuth,Elevation]
@@ -85,22 +87,24 @@ for n1 = 1:nbrOfAngleRealizations
         utilize = false(M,1);
         if mod(n1,2) == 0
             utilize(bestInit1) = true;
-            idx(n1) = randi(M-M_H)+M_H;
-            while idx(n1) == bestInit1
-                idx(n1) = randi(M-M_H)+M_H;
+            idx(n1,n2) = randi(M-M_H)+M_H;
+            while idx(n1,n2) == bestInit1
+                idx(n1,n2) = randi(M-M_H)+M_H;
             end
-            utilize(idx(n1)) = true;          
+            utilize(idx(n1,n2)) = true;          
         else 
-            idx(n1) = randi(M-M_H)+M_H;
-            utilize(idx(n1)) = true;
-            idx2(n1) = randi(M-M_H)+M_H;
-            if idx2(n1) ~= idx(n1)
-                utilize(idx2(n1) ) = true;
-            elseif idx2 ~= M
-                utilize(idx2(n1) +1) = true;
-            else
-                utilize(idx2(n1) -1) = true;
-            end
+%             idx(n1,n2) = randi(M-M_H)+M_H;
+%             utilize(idx(n1,n2)) = true;
+%             idx2(n1,n2) = randi(M-M_H)+M_H;
+%             if idx2(n1,n2) ~= idx(n1,n2)
+%                 utilize(idx2(n1,n2) ) = true;
+%             elseif idx2(n1,n2) ~= M
+%                 utilize(idx2(n1,n2) +1) = true;
+%             else
+%                 utilize(idx2(n1,n2) -1) = true;
+%             end
+            utilize(round(M/3)) = true;
+            utilize(round(2*M/3)) = true;
         end
 
         %Define the initial transmission setup
@@ -227,11 +231,21 @@ set(groot,'defaultAxesTickLabelInterpreter','latex');
 figure;
 hold on; box on; grid on;
 plot(2:M,mean(capacity)*ones(M-1,1),'r:','LineWidth',2)
-plot(2:M,mean(mean(rate_proposed(:,2:2:200,:),3),2),'k-','LineWidth',2)
+plot(2:M,mean(mean(rate_proposed(:,2:2:200,:),3),2),'m-','LineWidth',2)
+plot(2:M,mean(mean(rate_proposed(:,1:2:200,:),3),2),'k-','LineWidth',2)
 plot(2:M,mean(mean(rate_LS,3),2),'b-.','LineWidth',2)
 ax = gca;
 xlabel('Number of pilot transmissions','Interpreter','latex');
 ylabel('Average rate (bits/s/Hz)','Interpreter','latex');
-legend({'Perfect CSI','Proposed ML estimator','Least-squares estimator'},'Interpreter','latex','Location','SouthEast');
+legend({'Perfect CSI','Proposed ML estimator - Smart initialization','Proposed ML estimator - Random initialization','Least-squares estimator'},'Interpreter','latex','Location','SouthEast');
 set(gca,'fontsize',16);
 ylim([0 ceil(max(capacity))+0.5]);
+
+ax = gca; % to get the axis handle
+ax.XLabel.Units = 'normalized'; % Normalized unit instead of 'Data' unit 
+ax.Position = [0.15 0.15 0.8 0.8]; % Set the position of inner axis with respect to
+                           % the figure border
+ax.XLabel.Position = [0.5 -0.07]; % position of the label with respect to 
+                                  % axis
+fig = gcf;
+set(fig,'position',[60 50 900 600]); %[left bottom width height]
