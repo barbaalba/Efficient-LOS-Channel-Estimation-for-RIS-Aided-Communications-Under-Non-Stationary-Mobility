@@ -35,7 +35,7 @@ d_z = z_t-RIS_coor(3);
 d_t = sqrt(d_x.^2+d_y.^2+d_z.^2);
 Cph = exp(-1i*2*pi*d_t/lambda);
 % report the near-field percentage
-sum(d_t < d_fraun,'all')/RWL/numUE*100
+disp(['How much percentage in near field: ' num2str(sum(d_t < d_fraun,'all')/RWL/numUE*100)]);
 % Azimuth 
 azimuth = d_y./d_x;
 azimuth = atan(azimuth);
