@@ -3,16 +3,16 @@ clear; load("fast.mat","azimuth","Cph","elevation");
 freq = 28e9; % Central frequency
 lambda = physconst('LightSpeed') / freq; % Wavelength
 SRes = 100; % search resolution
-Prep = 1; % period of channel estimation
+Prep = 5; % period of channel estimation
 %UPA Element configuration
 M_H = 8; M_V = 8; M = M_H*M_V;
 elementspacing = 1/4; %In wavelengths
 
 %Set the SNR
-SNRdB_pilot = 10;
+SNRdB_pilot = 0;
 SNR_pilot = db2pow(SNRdB_pilot);
 
-SNRdB_data = 0;
+SNRdB_data = -10;
 SNR_data = db2pow(SNRdB_data);
 
 %Select angle to the base station (known value)
@@ -22,12 +22,7 @@ theta_BS = 0;
 %Generate channels
 h = UPA_Evaluate(lambda,M_V,M_H,varphi_BS,theta_BS,elementspacing,elementspacing);
 Dh = diag(h);
-Dh_angles = diag(h./abs(h));
-
-%channel d (UE to BS)   
-var_phas_d= pi/7;
-var_amp_d= 1;
-d = sqrt(var_amp_d) * exp (1i*var_phas_d); 
+Dh_angles = diag(h./abs(h)); 
 
 nbrOfAngleRealizations = 200;
 nbrOfNoiseRealizations = 1;
@@ -43,17 +38,19 @@ rate_LS = zeros(M-1,nbrOfAngleRealizations,nbrOfNoiseRealizations);
 ElAngles = asin((-M_V/2:1:M_V/2-1)*2/M_V);
 AzAngles = asin((-M_H/2:1:M_H/2-1)*2/M_H);
 beamAngles = zeros(M,2); % Elevation-Azimuth pair
+beamresponses = zeros(M,M);
 for i = 1:length(ElAngles)
     beamAngles ((i-1)*length(AzAngles)+1: i*length(AzAngles),:) = [repelem(ElAngles(i),length(AzAngles),1) AzAngles'];
+    beamresponses(:,(i-1)*length(AzAngles)+1: i*length(AzAngles)) = UPA_Evaluate(lambda,M_V,M_H,AzAngles,repelem(ElAngles(i),1,length(AzAngles)),elementspacing,elementspacing);
 end
 
 %plot the Configured angles grid
-for i = 1:length(beamAngles)
-    figure(1);
-    grid on;
-    plot(rad2deg(beamAngles(i,2)),rad2deg(beamAngles(i,1)),'*','MarkerSize',10,'Color','b');
-    hold on;
-end
+% for i = 1:length(beamAngles)
+%     figure(1);
+%     grid on;
+%     plot(rad2deg(beamAngles(i,2)),rad2deg(beamAngles(i,1)),'*','MarkerSize',10,'Color','b');
+%     hold on;
+% end
 
 for n1 = 1:nbrOfAngleRealizations
     disp(n1);
@@ -62,8 +59,11 @@ for n1 = 1:nbrOfAngleRealizations
     %channel g (UE to RIS)
     varphi_UE = azimuth(n1);
     theta_UE = elevation(n1);
-    var_amp_g= 10;
+    var_amp_g= 1;
     g = sqrt(var_amp_g) * Cph(n1) * UPA_Evaluate(lambda,M_V,M_H,varphi_UE,theta_UE,elementspacing,elementspacing);
+    %channel d (UE to BS)   
+    var_amp_d= 1;
+    d = sqrt(var_amp_d) * (randn + 1i*randn); % CN(0,1)
 
     % Define a fine grid of angle directions to analyze when searching for angle of arrival
     varphi_range = linspace(-pi/2,pi/2,SRes);
