@@ -12,8 +12,8 @@ d_BSRIS = 30;
 Xmax = 5; % Room size = [-Xmax, Xmax]
 Ymax = 5; % Room size = [-Ymax, Ymax]
 numUE = 1; % number of users
-RWL = 200;  % Length of the random walk
-Speed = 0.25; % meter per second movement
+RWL = 1000;  % Length of the random walk
+Speed = 0.1; % meter per second movement
 plt = true; % To plot the trajectory
 pltconf = 'discrete'; % 'continous' or 'discrete'
 RIS_coor = [-Xmax,0,2]; % the RIS is located at the end of the room 
@@ -45,7 +45,7 @@ if plt
     plotTrajectory(x_t,y_t,azimuth,elevation,pltconf,Xmax,Ymax,RIS_coor);
 end
 % uncomment it to save the required data
-save('slow.mat','x_t','y_t','azimuth','elevation','Cph'); 
+save('fast.mat','x_t','y_t','azimuth','elevation','Cph'); 
 %% Direct Channel model 
 g_d = -130; % the NLOS direct channel gain
 h_d = sqrt(db2pow(g_d)) * (randn+1i*randn); % direct channel complex gain
