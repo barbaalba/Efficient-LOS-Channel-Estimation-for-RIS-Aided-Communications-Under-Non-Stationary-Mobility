@@ -24,7 +24,7 @@ h = UPA_Evaluate(lambda,M_V,M_H,varphi_BS,theta_BS,elementspacing,elementspacing
 Dh = diag(h);
 Dh_angles = diag(h./abs(h)); 
 
-nbrOfAngleRealizations = 200;
+nbrOfAngleRealizations = 1000;
 nbrOfNoiseRealizations = 1;
 
 
@@ -206,7 +206,11 @@ set(groot,'defaultAxesTickLabelInterpreter','latex');
 figure; 
 plot(capacity,'--','LineWidth',2); hold on;
 plot(rate_proposed(63,:),'LineWidth',2);
-xline(1:Prep:nbrOfAngleRealizations);
+%xline(1:Prep:nbrOfAngleRealizations);
+plot(1:Prep:nbrOfAngleRealizations,rate_proposed(63,1:Prep:nbrOfAngleRealizations),'Marker','o','LineStyle','none','MarkerSize',10,'LineWidth',2);
+xticks(0:100:1000);
+xticklabels({'0','20','40','60','80','100','120','140','160','180','200'})
+legend({'Perfect CSI','1 seconds','10 seconds','Update '},'Fontsize',20,'Interpreter','latex');
 
 figure;
 hold on; box on; grid on;
