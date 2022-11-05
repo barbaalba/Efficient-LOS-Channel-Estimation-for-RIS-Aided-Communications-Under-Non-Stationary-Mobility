@@ -23,8 +23,8 @@ h = UPA_Evaluate(lambda,M_V,M_H,varphi_BS,theta_BS,elementspacing,elementspacing
 Dh = diag(h);
 Dh_angles = diag(h./abs(h));
 
-nbrOfAngleRealizations = 200;
-nbrOfNoiseRealizations = 100;
+nbrOfAngleRealizations = 1000;
+nbrOfNoiseRealizations = 5;
 
 
 %Save the rates achieved at different iterations of the algorithm
@@ -63,8 +63,8 @@ for n1 = 1:nbrOfAngleRealizations
     g = sqrt(var_amp_g) * Cph(n1) * UPA_Evaluate(lambda,M_V,M_H,varphi_UE,theta_UE,elementspacing,elementspacing);
     
     %channel d (UE to BS)   
-    var_amp_d= 1;
-    d = sqrt(var_amp_d) * (randn + 1i*randn); % CN(0,1)
+    var_amp_d= 10;
+    d = sqrt(var_amp_d/2) * (randn + 1i*randn); % CN(0,1)
 
     % Define a fine grid of angle directions to analyze when searching for
     % angle of arrival (Estimation)
