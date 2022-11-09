@@ -1,7 +1,19 @@
-close all; clc;
-clear; load("fast.mat","azimuth","Cph","elevation");
+close all; clc; clear; 
 freq = 28e9; % Central frequency
 lambda = physconst('LightSpeed') / freq; % Wavelength
+
+% Mobility Config 
+Speed = 0.1; numUE = 1; RWL = 1000;
+Xmax = 5; Ymax = 5; z_t = repelem(1.5,numUE,RWL+1); randchan = true;
+RIS_coor = [-Xmax,0,2];
+% Channel parameters
+if ~randchan 
+    load("fast.mat","azimuth","Cph","elevation");
+else
+    [x_t,y_t] = randomwalk(numUE,RWL,Xmax,Ymax,Speed);
+    [azimuth,elevation,Cph,d_t] = ChanParGen(x_t,y_t,z_t,RIS_coor,lambda);
+end
+
 SRes = 100; % search resolution
 Prep = 50; % period of channel estimation
 %UPA Element configuration
@@ -200,7 +212,6 @@ for n1 = 1:nbrOfAngleRealizations
         capacity(n1) = log2(1+SNR_data*(sum(abs(Dh*g)) + abs(d))^2);
     end
 end
-
 
 set(groot,'defaultAxesTickLabelInterpreter','latex');  
 figure; 
