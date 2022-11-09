@@ -1,4 +1,5 @@
 clear;clc;close all;
+rng(13);
 %% Scanario Initialization
 freq = 28e9; % Central frequency
 lambda = physconst('LightSpeed') / freq; % Wavelength
@@ -12,8 +13,8 @@ d_BSRIS = 30;
 Xmax = 5; % Room size = [-Xmax, Xmax]
 Ymax = 5; % Room size = [-Ymax, Ymax]
 numUE = 1; % number of users
-RWL = 1000;  % Length of the random walk
-Speed = 0.1; % meter per second movement
+RWL = 200;  % Length of the random walk
+Speed = 0.5; % meter per second movement
 plt = true; % To plot the trajectory
 pltconf = 'discrete'; % 'continous' or 'discrete'
 RIS_coor = [-Xmax,0,2]; % the RIS is located at the end of the room 
@@ -27,25 +28,14 @@ txpow = 0; % [dBm]
 %% Extract Azimuth-Elevation-Distance
 % Random walk
 [x_t,y_t] = randomwalk(numUE,RWL,Xmax,Ymax,Speed);
-
-d_x = x_t-RIS_coor(1);
-d_y = y_t-RIS_coor(2);
-d_z = z_t-RIS_coor(3);
-% Distance to RIS
-d_t = sqrt(d_x.^2+d_y.^2+d_z.^2);
-Cph = exp(-1i*2*pi*d_t/lambda);
+[azimuth,elevation,Cph,d_t] = ChanParGen(x_t,y_t,z_t,RIS_coor,lambda);
 % report the near-field percentage
 disp(['How much percentage in near field: ' num2str(sum(d_t < d_fraun,'all')/RWL/numUE*100)]);
-% Azimuth 
-azimuth = d_y./d_x;
-azimuth = atan(azimuth);
-elevation =  d_z ./ d_t;
-elevation = asin(elevation);
 if plt
     plotTrajectory(x_t,y_t,azimuth,elevation,pltconf,Xmax,Ymax,RIS_coor);
 end
 % uncomment it to save the required data
-save('fast.mat','x_t','y_t','azimuth','elevation','Cph'); 
+save('fast20.mat','x_t','y_t','azimuth','elevation','Cph'); 
 %% Direct Channel model 
 g_d = -130; % the NLOS direct channel gain
 h_d = sqrt(db2pow(g_d)) * (randn+1i*randn); % direct channel complex gain
