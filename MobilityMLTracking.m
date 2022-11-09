@@ -3,7 +3,7 @@ clear; load("fast.mat","azimuth","Cph","elevation");
 freq = 28e9; % Central frequency
 lambda = physconst('LightSpeed') / freq; % Wavelength
 SRes = 100; % search resolution
-Prep = 5; % period of channel estimation
+Prep = 50; % period of channel estimation
 %UPA Element configuration
 M_H = 8; M_V = 8; M = M_H*M_V;
 elementspacing = 1/4; %In wavelengths
@@ -62,8 +62,8 @@ for n1 = 1:nbrOfAngleRealizations
     var_amp_g= 1;
     g = sqrt(var_amp_g) * Cph(n1) * UPA_Evaluate(lambda,M_V,M_H,varphi_UE,theta_UE,elementspacing,elementspacing);
     %channel d (UE to BS)   
-    var_amp_d= 1;
-    d = sqrt(var_amp_d) * (randn + 1i*randn); % CN(0,1)
+    var_pow_d= 10;
+    d = sqrt(var_pow_d/2) * (randn + 1i*randn); % CN(0,10)
 
     % Define a fine grid of angle directions to analyze when searching for angle of arrival
     varphi_range = linspace(-pi/2,pi/2,SRes);
