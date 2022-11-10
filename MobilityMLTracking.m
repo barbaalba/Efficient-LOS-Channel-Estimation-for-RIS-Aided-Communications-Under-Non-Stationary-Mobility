@@ -1,10 +1,10 @@
 close all; clc; clear; 
 freq = 28e9; % Central frequency
 lambda = physconst('LightSpeed') / freq; % Wavelength
-
+rng(1);
 % Mobility Config 
 Speed = 0.1; numUE = 1; RWL = 1000;
-Xmax = 5; Ymax = 5; z_t = repelem(1.5,numUE,RWL+1); randchan = true;
+Xmax = 5; Ymax = 5; z_t = repelem(1.5,numUE,RWL+1); randchan = false;
 RIS_coor = [-Xmax,0,2];
 % Channel parameters
 if ~randchan 
@@ -14,8 +14,9 @@ else
     [azimuth,elevation,Cph,d_t] = ChanParGen(x_t,y_t,z_t,RIS_coor,lambda);
 end
 
+% Tracking config
+Prep = 5; % period of channel estimation
 SRes = 100; % search resolution
-Prep = 50; % period of channel estimation
 %UPA Element configuration
 M_H = 8; M_V = 8; M = M_H*M_V;
 elementspacing = 1/4; %In wavelengths
@@ -63,7 +64,7 @@ end
 %     plot(rad2deg(beamAngles(i,2)),rad2deg(beamAngles(i,1)),'*','MarkerSize',10,'Color','b');
 %     hold on;
 % end
-
+idx = zeros(nbrOfAngleRealizations,nbrOfNoiseRealizations);
 for n1 = 1:nbrOfAngleRealizations
     disp(n1);
 
@@ -95,8 +96,22 @@ for n1 = 1:nbrOfAngleRealizations
 
             %Select which two RIS configurations from the grid of beams to start with
             utilize = false(M,1);
-            utilize(round(M/3)) = true;
-            utilize(round(2*M/3)) = true;
+            if n1 == 1
+                % For the first time we initialize randomly 
+                utilize(round(M/3)) = true;
+                utilize(round(2*M/3)) = true;
+                Plim = M; % number of pilots
+            else
+                % Start the estimation with using the previous best RIS
+                % config to track the channel
+                utilize(bestInit1) = true;
+                idx(n1,n2) = randi(M-M_H)+M_H;
+                while idx(n1,n2) == bestInit1
+                    idx(n1,n2) = randi(M-M_H)+M_H;
+                end
+                utilize(idx(n1,n2)) = true;
+                Plim = 5;
+            end
 
             %Define the initial transmission setup
             RIS_directions = beamAngles(utilize,:);
@@ -109,7 +124,7 @@ for n1 = 1:nbrOfAngleRealizations
 
 
             %Go through iterations by adding extra RIS configurations in the estimation
-            for itr = 1:M-1
+            for itr = 1:Plim-1
             %Generate the received signal
                 y =  sqrt(SNR_pilot)*(B*Dh*g + d) + noise(1:itr+1,1);
 
@@ -156,7 +171,7 @@ for n1 = 1:nbrOfAngleRealizations
 
 
                 %Find an extra RIS configuration to use for pilot transmission
-                if itr < M-1
+                if itr < Plim-1
 
                     %Find which angles in the grid-of-beams haven't been used
                     unusedAngles = beamAngles(utilize==false,:);
@@ -180,32 +195,12 @@ for n1 = 1:nbrOfAngleRealizations
                     RISconfigs = Dh_angles*UPA_Evaluate(lambda,M_V,M_H,RIS_directions(:,2),RIS_directions(:,1),...
                         elementspacing,elementspacing);
                     B = RISconfigs';
+                else
+                    closestBeam = abs(exp(-1i*RISconfig).'*Dh_angles*beamresponses); 
+                    [~,bestInit1] = max(closestBeam);
                 end
             end
         end
-
-        %LS estimation
-%         DFT = fft(eye(M+1));
-%         randomOrdering = randperm(M+1);
-        
-%         %Go through iterations by adding extra RIS configurations in the estimation
-%         for itr = 1:M-1
-% 
-%             B_LS = transpose(DFT(:,randomOrdering(1:itr+1)));
-% 
-%             v = [d;Dh*g]; % cascaded channel and direct path 
-%             y = sqrt(SNR_pilot)*B_LS*v + noise(1:itr+1,1);
-%              
-%             %Compute LS estimate without parametrization
-%             v_LS = pinv(B_LS)*y/sqrt(SNR_pilot);
-% 
-%             %Estimate the RIS configuration that (approximately) maximizes the SNR
-%             RISconfig =  angle(v_LS(2:end)) - angle(v_LS(1));
-% 
-%             %Compute the corresponding achievable rate
-%             rate_LS(itr,n1,n2) = log2(1+SNR_data*abs(exp(-1i*RISconfig).'*Dh*g+d).^2);
-% 
-%         end
 
     else
         rate_proposed(itr,n1,n2) = log2(1+SNR_data*abs(exp(-1i*RISconfig).'*Dh*g + d)^2);
