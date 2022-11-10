@@ -3,7 +3,7 @@ x_t = zeros(NumUE,RandomLength);
 y_t = zeros(NumUE,RandomLength);
 for m=1:NumUE
   for n = 1:RandomLength % Looping all values of N into x_t(n).
-      if x_t(m,n) < Xmax && x_t(m,n)>-Xmax
+      if x_t(m,n) < (Xmax-SP) && x_t(m,n)>(-Xmax+SP)
           A = SP*sign(randn); % Generates either +1/-1 depending on the SIGN of RAND.
           x_t(m,n+1) = x_t(m,n) + A;
       else
