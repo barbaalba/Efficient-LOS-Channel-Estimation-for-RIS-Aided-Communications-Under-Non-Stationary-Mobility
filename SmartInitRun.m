@@ -1,5 +1,5 @@
 close all; clc;
-clear; load("fast.mat","azimuth","Cph","elevation");
+clear; load("fast13.mat","azimuth","Cph","elevation");
 freq = 28e9; % Central frequency
 lambda = physconst('LightSpeed') / freq; % Wavelength
 SRes = 100; % search resolution
@@ -23,7 +23,7 @@ h = UPA_Evaluate(lambda,M_V,M_H,varphi_BS,theta_BS,elementspacing,elementspacing
 Dh = diag(h);
 Dh_angles = diag(h./abs(h));
 
-nbrOfAngleRealizations = 1000;
+nbrOfAngleRealizations = 200;
 nbrOfNoiseRealizations = 5;
 
 
