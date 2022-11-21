@@ -9,10 +9,10 @@ for k = 1:K
     subplot(2,2,1);set(gca, 'ydir', 'reverse');xlabel('y');ylabel('x');
     grid on; xlim([-Xmax,Xmax]); ylim([-Ymax,Ymax]); hold on;
     plot(RIS_coor(2),RIS_coor(1),'Marker','square','MarkerSize',10,'Color','r');
-    subplot(2,2,2);xlabel('time (Sec)','Interpreter','latex','FontSize',20);
-    ylabel('azimuth','Interpreter','latex','FontSize',20);grid on;ylim([-90,90]);
+    subplot(2,2,2);xlabel('Time (s)','Interpreter','latex','FontSize',20);
+    ylabel('Azimuth','Interpreter','latex','FontSize',20);grid on;ylim([-90,90]);
     xlim([1,T]);hold on;yticks([-90 -45 0 45 90]);
-    subplot(2,2,[3,4]);xlabel('Time (Sec)','Interpreter','latex','FontSize',20);
+    subplot(2,2,[3,4]);xlabel('Time (s)','Interpreter','latex','FontSize',20);
     ylabel('Elevation','Interpreter','latex','FontSize',20); grid on;
     ylim([-90,0]);xlim([1,T]); hold on;
     for t = 2:T
@@ -32,9 +32,9 @@ for k = 1:K
     %nexttile(2);
     subplot(2,2,2);
     plot(rad2deg(Az(k,1:t)),'r','Marker','*','MarkerSize',4);
-    pause(0.01);
+    %pause(0.01);
     subplot(2,2,[3,4]);
     plot(rad2deg(El(k,1:t)),'k','Marker','*','MarkerSize',4);
-    pause(0.01);
+    %pause(0.01);
     end
 end
