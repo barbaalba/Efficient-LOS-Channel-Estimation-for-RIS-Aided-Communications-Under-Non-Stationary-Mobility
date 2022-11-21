@@ -231,8 +231,8 @@ set(groot,'defaultAxesTickLabelInterpreter','latex');
 figure;
 hold on; box on; grid on;
 plot(2:M,mean(capacity)*ones(M-1,1),'r:','LineWidth',2)
-plot(2:M,mean(mean(rate_proposed(:,2:2:200,:),3),2),'m-','LineWidth',2)
-plot(2:M,mean(mean(rate_proposed(:,1:2:200,:),3),2),'k-','LineWidth',2)
+plot(2:M,mean(mean(rate_proposed(:,2:2:nbrOfAngleRealizations,:),3),2),'m-','LineWidth',2)
+plot(2:M,mean(mean(rate_proposed(:,1:2:nbrOfAngleRealizations,:),3),2),'k-','LineWidth',2)
 plot(2:M,mean(mean(rate_LS,3),2),'b-.','LineWidth',2)
 ax = gca;
 xlabel('Number of pilot transmissions','Interpreter','latex');
