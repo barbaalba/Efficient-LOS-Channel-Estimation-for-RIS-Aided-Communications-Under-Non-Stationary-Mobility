@@ -8,4 +8,4 @@
 
 # List of secondary files:
 * **OldPaper**: it includes the code for the following paper: 
-Björnson, Emil, and Parisa Ramezani. "Maximum Likelihood Channel Estimation for RIS-Aided Communications With LOS Channels." arXiv preprint arXiv:2209.10867 (2022).
+  * Björnson, Emil, and Parisa Ramezani. "Maximum Likelihood Channel Estimation for RIS-Aided Communications With LOS Channels." arXiv preprint arXiv:2209.10867 (2022).
