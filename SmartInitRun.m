@@ -236,7 +236,7 @@ plot(2:M,mean(mean(rate_proposed(:,1:2:200,:),3),2),'k-','LineWidth',2)
 plot(2:M,mean(mean(rate_LS,3),2),'b-.','LineWidth',2)
 ax = gca;
 xlabel('Number of pilot transmissions','Interpreter','latex');
-ylabel('Average rate (bits/s/Hz)','Interpreter','latex');
+ylabel('Average rate (bit/s/Hz)','Interpreter','latex');
 legend({'Perfect CSI','Proposed ML estimator - Smart initialization','Proposed ML estimator - Random initialization','Least-squares estimator'},'Interpreter','latex','Location','SouthEast');
 set(gca,'fontsize',16);
 ylim([0 ceil(max(capacity))+0.5]);
