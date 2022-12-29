@@ -43,6 +43,15 @@ for i = 1:length(ElAngles)
     beamresponses(:,(i-1)*length(AzAngles)+1: i*length(AzAngles)) = UPA_Evaluate(lambda,M_V,M_H,AzAngles,repelem(ElAngles(i),1,length(AzAngles)),elementspacing,elementspacing);
 end
 
+% Define a fine grid of angle directions to analyze when searching for angle of arrival
+varphi_range = linspace(-pi/2,pi/2,SRes);
+theta_range = linspace(-pi/2,pi/2,SRes);
+a_varphi_range = zeros(M,SRes,SRes); % [M,Azimuth,Elevation]
+% obtain the array response vectors for all azimuth-elevation pairs
+parfor i = 1:SRes
+    a_varphi_range(:,:,i) = ...
+    UPA_Evaluate(lambda,M_V,M_H,varphi_range,repelem(theta_range(i),1,SRes),elementspacing,elementspacing);
+end
 %plot the Configured angles grid
 % for i = 1:length(beamAngles)
 %     figure(1);
@@ -65,18 +74,6 @@ for n1 = 1:nbrOfAngleRealizations
     %channel d (UE to BS)   
     var_amp_d= 10;
     d = sqrt(var_amp_d/2) * (randn + 1i*randn); % CN(0,1)
-
-    % Define a fine grid of angle directions to analyze when searching for
-    % angle of arrival (Estimation)
-    varphi_range = linspace(-pi/2,pi/2,SRes);
-    theta_range = linspace(-pi/2,pi/2,SRes);
-    a_varphi_range = zeros(M,SRes,SRes); % [M,Azimuth,Elevation]
-
-    % obtain the array response vectors for all azimuth-elevation pairs
-    parfor i = 1:SRes
-        a_varphi_range(:,:,i) = ...
-            UPA_Evaluate(lambda,M_V,M_H,varphi_range,repelem(theta_range(i),1,SRes),elementspacing,elementspacing);
-    end
 
     %Compute the exact capacity for the system Eq. (3)
     capacity(n1) = log2(1+SNR_data*(sum(abs(Dh*g)) + abs(d))^2);
