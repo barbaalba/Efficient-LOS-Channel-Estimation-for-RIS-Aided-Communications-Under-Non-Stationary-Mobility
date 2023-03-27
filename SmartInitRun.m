@@ -2,7 +2,6 @@ close all; clc;
 clear; load("fast13.mat","azimuth","Cph","elevation");
 freq = 28e9; % Central frequency
 lambda = physconst('LightSpeed') / freq; % Wavelength
-SRes = 100; % search resolution
 %UPA Element configuration
 M_H = 8; M_V = 8; M = M_H*M_V;
 elementspacing = 1/4; %In wavelengths
@@ -44,6 +43,7 @@ for i = 1:length(ElAngles)
 end
 
 % Define a fine grid of angle directions to analyze when searching for angle of arrival
+SRes = 100; % search resolution
 varphi_range = linspace(-pi/2,pi/2,SRes);
 theta_range = linspace(-pi/2,pi/2,SRes);
 a_varphi_range = zeros(M,SRes,SRes); % [M,Azimuth,Elevation]
@@ -90,16 +90,6 @@ for n1 = 1:nbrOfAngleRealizations
             end
             utilize(idx(n1,n2)) = true;          
         else 
-%             idx(n1,n2) = randi(M-M_H)+M_H;
-%             utilize(idx(n1,n2)) = true;
-%             idx2(n1,n2) = randi(M-M_H)+M_H;
-%             if idx2(n1,n2) ~= idx(n1,n2)
-%                 utilize(idx2(n1,n2) ) = true;
-%             elseif idx2(n1,n2) ~= M
-%                 utilize(idx2(n1,n2) +1) = true;
-%             else
-%                 utilize(idx2(n1,n2) -1) = true;
-%             end
             utilize(round(M/3)) = true;
             utilize(round(2*M/3)) = true;
         end
@@ -228,7 +218,9 @@ set(groot,'defaultAxesTickLabelInterpreter','latex');
 figure;
 hold on; box on; grid on;
 plot(2:M,mean(capacity)*ones(M-1,1),'r:','LineWidth',2)
+% result when we have prior knowledge
 plot(2:M,mean(mean(rate_proposed(:,2:2:nbrOfAngleRealizations,:),3),2),'m-','LineWidth',2)
+% result when the initialization is blind
 plot(2:M,mean(mean(rate_proposed(:,1:2:nbrOfAngleRealizations,:),3),2),'k-','LineWidth',2)
 plot(2:M,mean(mean(rate_LS,3),2),'b-.','LineWidth',2)
 ax = gca;
