@@ -2,7 +2,7 @@ close all; clc; clear;
 freq = 28e9; % Central frequency
 lambda = physconst('LightSpeed') / freq; % Wavelength
 rng(4);
-% Mobility Config 
+% Mobility Config (Room Size, User speed, RIS coordination)
 Speed = 0.1; numUE = 1; RWL = 1000;
 Xmax = 5; Ymax = 5; z_t = repelem(1.5,numUE,RWL+1); randchan = false;
 RIS_coor = [-Xmax,0,2];
@@ -16,7 +16,7 @@ end
 
 % Tracking config
 Prep = 50; % period of channel estimation
-SRes = 100; % search resolution
+
 %UPA Element configuration
 M_H = 8; M_V = 8; M = M_H*M_V;
 elementspacing = 1/4; %In wavelengths
@@ -37,7 +37,7 @@ h = UPA_Evaluate(lambda,M_V,M_H,varphi_BS,theta_BS,elementspacing,elementspacing
 Dh = diag(h);
 Dh_angles = diag(h./abs(h)); 
 
-nbrOfAngleRealizations = 1000;
+nbrOfAngleRealizations = RWL;
 nbrOfNoiseRealizations = 100;
 
 
@@ -58,6 +58,7 @@ for i = 1:length(ElAngles)
 end
 
 % Define a fine grid of angle directions to analyze when searching for angle of arrival
+SRes = 100; % search resolution
 varphi_range = linspace(-pi/2,pi/2,SRes);
 theta_range = linspace(-pi/2,pi/2,SRes);
 a_varphi_range = zeros(M,SRes,SRes); % [M,Azimuth,Elevation]
@@ -67,7 +68,7 @@ parfor i = 1:SRes
     UPA_Evaluate(lambda,M_V,M_H,varphi_range,repelem(theta_range(i),1,SRes),elementspacing,elementspacing);
 end
 
-idx = zeros(nbrOfAngleRealizations,nbrOfNoiseRealizations);
+idx = zeros(nbrOfAngleRealizations,nbrOfNoiseRealizations); 
 for n1 = 1:nbrOfAngleRealizations
     disp(n1);
 
