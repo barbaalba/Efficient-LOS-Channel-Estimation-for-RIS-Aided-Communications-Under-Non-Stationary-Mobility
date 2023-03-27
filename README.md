@@ -1,5 +1,5 @@
 # Mobility_RIS
-* It resulted in submitted paper to ICC 2023
+* It resulted in an accepted paper to ICC 2023 conference
 # List of main files #
 * **SmartInitRun**: It generates Fig. 2 where it loads a specific data including the large scale parameters of the channel.
 * **RandomWalkRun**: It generates and extract the large scale parameters of the channel. 
