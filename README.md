@@ -1,9 +1,10 @@
 # Mobility_RIS
-* It resulted in an accepted paper to ICC 2023 Conference
+These codes correspond to the following paper accepted in the ICC 2023 Conference. 
+* Haghshenas, Mehdi, Parisa Ramezani, and Emil Björnson. "Efficient LOS Channel Estimation for RIS-Aided Communications Under Non-Stationary Mobility." arXiv preprint arXiv:2303.16544 (2023).
 # List of main files #
-* **SmartInitRun**: It generates Fig. 2 where it loads a specific data including the large scale parameters of the channel.
-* **RandomWalkRun**: It generates and extract the large scale parameters of the channel. 
-* **PlotTrajectory**: It results in Fig. 1. and in addition it has two configuration to demonstrate the user random walk in the room.
+* **SmartInitRun**: It generates Fig. 2 where it loads specific data including the large-scale parameters of the channel.
+* **RandomWalkRun**: It generates and extracts the large-scale parameters of the channel. 
+* **PlotTrajectory**: It results in Fig. 1. It also has two configurations to demonstrate the user's random walk in the room.
 * **MobilityMLTracking**: It generates Fig. 3. One can configure how often the channel should be re-estimated and RIS be reconfigured.
 
 
