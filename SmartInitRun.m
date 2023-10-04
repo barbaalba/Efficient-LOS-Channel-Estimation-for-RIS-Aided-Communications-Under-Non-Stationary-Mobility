@@ -1,3 +1,5 @@
+% This code is intended to understand if prior knowledge of location can
+% help to reduce further the pilot overhead length
 close all; clc;
 clear; load("fast13.mat","azimuth","Cph","elevation");
 freq = 28e9; % Central frequency
@@ -52,13 +54,7 @@ parfor i = 1:SRes
     a_varphi_range(:,:,i) = ...
     UPA_Evaluate(lambda,M_V,M_H,varphi_range,repelem(theta_range(i),1,SRes),elementspacing,elementspacing);
 end
-%plot the Configured angles grid
-% for i = 1:length(beamAngles)
-%     figure(1);
-%     grid on;
-%     plot(rad2deg(beamAngles(i,2)),rad2deg(beamAngles(i,1)),'*','MarkerSize',10,'Color','b');
-%     hold on;
-% end
+
 idx = zeros(nbrOfAngleRealizations,nbrOfNoiseRealizations);
 idx2 = zeros(nbrOfAngleRealizations,nbrOfNoiseRealizations);
 for n1 = 1:nbrOfAngleRealizations
@@ -82,6 +78,8 @@ for n1 = 1:nbrOfAngleRealizations
 
         %Select which two RIS configurations from the grid of beams to start with
         utilize = false(M,1);
+        % The odd value of n1 is considered as full (blind) estimation
+        % while the even value is for tracking the channel
         if mod(n1,2) == 0
             utilize(bestInit1) = true;
             idx(n1,n2) = randi(M-M_H)+M_H;
@@ -217,13 +215,12 @@ set(groot,'defaultAxesTickLabelInterpreter','latex');
 
 figure;
 hold on; box on; grid on;
-plot(2:M,mean(capacity)*ones(M-1,1),'r:','LineWidth',2)
+plot(2:M,mean(capacity)*ones(M-1,1),'r:','LineWidth',2); % plot the upperbound
 % result when we have prior knowledge
 plot(2:M,mean(mean(rate_proposed(:,2:2:nbrOfAngleRealizations,:),3),2),'m-','LineWidth',2)
-% result when the initialization is blind
+% result when the channel estimation is blind (No prior knowledge)
 plot(2:M,mean(mean(rate_proposed(:,1:2:nbrOfAngleRealizations,:),3),2),'k-','LineWidth',2)
 plot(2:M,mean(mean(rate_LS,3),2),'b-.','LineWidth',2)
-ax = gca;
 xlabel('Number of pilot transmissions','Interpreter','latex');
 ylabel('Average rate (bit/s/Hz)','Interpreter','latex');
 legend({'Perfect CSI','Proposed ML estimator - Smart initialization','Proposed ML estimator - Random initialization','Least-squares estimator'},'Interpreter','latex','Location','SouthEast');
