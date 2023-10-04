@@ -5,7 +5,7 @@ freq = 28e9; % Central frequency
 lambda = physconst('LightSpeed') / freq; % Wavelength
 rng(4);
 % Mobility Config (Room Size, User speed, RIS coordination)
-Speed = 0.1; numUE = 1; RWL = 200;
+Speed = 0.1; numUE = 1; RWL = 1000;
 Xmax = 5; Ymax = 5; z_t = repelem(1.5,numUE,RWL+1); randchan = true;
 RIS_coor = [-Xmax,0,2];
 % Channel parameters
