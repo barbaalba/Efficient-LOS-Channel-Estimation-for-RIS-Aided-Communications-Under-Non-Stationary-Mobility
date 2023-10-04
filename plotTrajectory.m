@@ -1,4 +1,13 @@
 function plotTrajectory(x_t,y_t,Az,El,conf,Xmax,Ymax,RIS_coor)
+% This function plots the mobility scenario
+%%%%%%%%%%%%%%%%% INPUT %%%%%%%%%%%%%%%%%%
+% x_t, y_t: The user location in the room
+% Az: Azimuth variation over time
+% El: Elevation variation over time
+% conf: Establish the ploting animation ("discrete")
+% Xmax, Ymax: Detemine the boundary of the room 
+% RIS_coor: Location of the RIS in the room
+
 K = size(x_t,1);
 T = size(x_t,2);
 for k = 1:K
