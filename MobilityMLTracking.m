@@ -1,10 +1,12 @@
+% The code is intended to understand the performance of the proposed
+% tracking sheme under mobility scenario 
 close all; clc; clear; 
 freq = 28e9; % Central frequency
 lambda = physconst('LightSpeed') / freq; % Wavelength
 rng(4);
 % Mobility Config (Room Size, User speed, RIS coordination)
-Speed = 0.1; numUE = 1; RWL = 1000;
-Xmax = 5; Ymax = 5; z_t = repelem(1.5,numUE,RWL+1); randchan = false;
+Speed = 0.1; numUE = 1; RWL = 200;
+Xmax = 5; Ymax = 5; z_t = repelem(1.5,numUE,RWL+1); randchan = true;
 RIS_coor = [-Xmax,0,2];
 % Channel parameters
 if ~randchan 
@@ -93,7 +95,7 @@ for n1 = 1:nbrOfAngleRealizations
                 % For the first time we initialize randomly 
                 utilize(round(M/3)) = true;
                 utilize(round(2*M/3)) = true;
-                Plim = M; % number of pilots
+                Plim = M; % number of pilots for intial estimation
             else
                 % Start the estimation with using the previous best RIS
                 % config to track the channel
@@ -103,7 +105,7 @@ for n1 = 1:nbrOfAngleRealizations
                     idx(n1,n2) = randi(M-M_H)+M_H;
                 end
                 utilize(idx(n1,n2)) = true;
-                Plim = 6;
+                Plim = 6; % number of pilots for tracking
             end
 
             %Define the initial transmission setup
@@ -198,29 +200,18 @@ for n1 = 1:nbrOfAngleRealizations
         end
     end
 end
-Rred = mean(rate_proposed,3);
+Rred = mean(rate_proposed,3); % redundant variable to store rate values for plot
 R = zeros(1,RWL);
 R(1:Prep) = Rred(M-1,1:Prep);
-R(Prep+1:end) = Rred(Plim-1,Prep+1:end);
+R(Prep+1:end) = Rred(Plim-1,Prep+1:end); % collection of rate for all time
 set(groot,'defaultAxesTickLabelInterpreter','latex');  
 figure; 
-plot(capacity,'-k','LineWidth',5); hold on;
-plot(R,'LineWidth',2);
-%xline(1:Prep:nbrOfAngleRealizations);
+plot(capacity,'-k','LineWidth',5); hold on; % plot upperbound
+plot(R,'LineWidth',2); % plot the achievable rate
+% plot the updating points
 plot(1:Prep:nbrOfAngleRealizations,R(1:Prep:nbrOfAngleRealizations),'Marker','o','LineStyle','none','MarkerSize',15,'LineWidth',4);
 xticks(0:100:1000); ylim([0,9.2]); grid on; box on;
 xticklabels({'0','20','40','60','80','100','120','140','160','180','200'})
 legend({'Perfect CSI','1\textsuperscript{st} Policy (1 second)','2\textsuperscript{nd} Policy (10 seconds)','Update points'},'Fontsize',20,'Interpreter','latex');
 ylabel('Spectral Efficiency (bit/s/Hz)','Interpreter','latex');
 xlabel('Time (s)','Interpreter','latex');
-figure;
-hold on; box on; grid on;
-plot(2:M,mean(capacity)*ones(M-1,1),'r:','LineWidth',2)
-plot(2:M,mean(mean(rate_proposed,3),2),'k-','LineWidth',2)
-plot(2:M,mean(mean(rate_LS,3),2),'b-.','LineWidth',2)
-ax = gca;
-xlabel('Number of pilot transmissions','Interpreter','latex');
-ylabel('Average rate (bit/s/Hz)','Interpreter','latex');
-legend({'Perfect CSI','Proposed ML estimator','Least-squares estimator'},'Interpreter','latex','Location','SouthEast');
-set(gca,'fontsize',16);
-ylim([0 ceil(max(capacity))+0.5]);
