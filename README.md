@@ -2,11 +2,11 @@
 These codes correspond to the following paper accepted in the ICC 2023 Conference. 
 
 IEEE
-* M. Haghshenas, P. Ramezani and E. Björnson, "Efficient LOS Channel Estimation for RIS-Aided Communications Under Non-Stationary Mobility," ICC 2023 - IEEE International Conference on Communications, Rome, Italy, 2023, pp. 2007-2012, doi: 10.1109/ICC45041.2023.10279469. keywords: {Training;Maximum likelihood estimation;Base stations;Tracking;Wireless networks;Refining;Channel estimation;Reconfigurable intelligent surface;parametric channel estimation;maximum likelihood estimator},
+* [M. Haghshenas, P. Ramezani and E. Björnson, "Efficient LOS Channel Estimation for RIS-Aided Communications Under Non-Stationary Mobility," ICC 2023 - IEEE International Conference on Communications, Rome, Italy, 2023, pp. 2007-2012, doi: 10.1109/ICC45041.2023.10279469. keywords: {Training;Maximum likelihood estimation;Base stations;Tracking;Wireless networks;Refining;Channel estimation;Reconfigurable intelligent surface;parametric channel estimation;maximum likelihood estimator},](https://doi.org/10.1109/ICC45041.2023.10279469)
 
 
 arXiv (Open Access)
-* Haghshenas, Mehdi, Parisa Ramezani, and Emil Björnson. "Efficient LOS Channel Estimation for RIS-Aided Communications Under Non-Stationary Mobility." arXiv preprint arXiv:2303.16544 (2023).
+* [Haghshenas, Mehdi, Parisa Ramezani, and Emil Björnson. "Efficient LOS Channel Estimation for RIS-Aided Communications Under Non-Stationary Mobility." arXiv preprint arXiv:2303.16544 (2023).](https://doi.org/10.48550/arXiv.2303.16544)
 # List of main files #
 * **SmartInitRun**: It generates Fig. 2, where it loads specific data (fast13.mat), including the large-scale parameters of the channel.
 * **RandomWalkRun**: It generates and extracts the large-scale parameters of the channel. 
