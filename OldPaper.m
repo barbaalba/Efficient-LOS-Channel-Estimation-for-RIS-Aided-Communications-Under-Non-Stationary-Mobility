@@ -2,9 +2,10 @@ close all;
 clear;
 
 %Number of horizontal elements in a ULA
-M = 40;
-elementspacing = 1/4; %In wavelengths
-
+M = 64;
+d_H = 1/2; %In wavelengths
+Plim = 16;
+LS = false;
 %Set the SNR
 SNRdB_pilot = 10;
 SNR_pilot = db2pow(SNRdB_pilot);
@@ -16,37 +17,36 @@ SNR_data = db2pow(SNRdB_data);
 varphi_BS = -pi/6;
 
 %Define the array response vector
-arrayresponse = @(phi,M) exp(-1i*2*pi*elementspacing*(0:M-1)'*sin(phi));
+arrayresponse = @(phi,M) exp(-1i*2*pi*d_H*(0:M-1)'*sin(phi));
 
 %Generate channels
 h = arrayresponse(varphi_BS,M);
 Dh = diag(h);
 Dh_angles = diag(h./abs(h));
 
-nbrOfAngleRealizations = 500;
-nbrOfNoiseRealizations = 100;
+nbrOfAngleRealizations = 10;
+nbrOfNoiseRealizations = 10;
 
 
 %Save the rates achieved at different iterations of the algorithm
 capacity = zeros(1,nbrOfAngleRealizations);
-rate_proposed = zeros(M-1,nbrOfAngleRealizations,nbrOfNoiseRealizations);
-rate_LS = zeros(M-1,nbrOfAngleRealizations,nbrOfNoiseRealizations);
+rate_proposed = zeros(Plim-1,nbrOfAngleRealizations,nbrOfNoiseRealizations);
+rate_LS = zeros(Plim-1,nbrOfAngleRealizations,nbrOfNoiseRealizations);
 
 
 %Create a uniform grid of beams (like a DFT matrix) to be used at RIS
 beamAngles = asin((-M/2:1:M/2)*2/M);
 
-
+% Define a fine grid of angle directions to analyze when searching for angle of arrival
+varphi_range = linspace(-pi/2,pi/2,1000);
+a_varphi_range = arrayresponse(varphi_range,M); 
+utilityfunction = zeros(1000,Plim);    
 for n1 = 1:nbrOfAngleRealizations
     n1
 
     %Select angle to the user (to be estimated)
     varphi_UE = rand(1)*2*pi/3-pi/3;
     g = arrayresponse(varphi_UE,M);
-
-    % Define a fine grid of angle directions to analyze when searching for angle of arrival
-    varphi_range = linspace(-pi/2,pi/2,1000);
-    a_varphi_range = arrayresponse(varphi_range,M);
 
 
     %Compute the exact capacity for the system
@@ -71,7 +71,7 @@ for n1 = 1:nbrOfAngleRealizations
 
 
         %Go through iterations by adding extra RIS configurations in the estimation
-        for itr = 1:M-1
+        for itr = 1:Plim-1
 
             %Generate the received signal
             y = sqrt(SNR_pilot)*B*Dh*g + noise(1:itr+1,1);
@@ -86,11 +86,10 @@ for n1 = 1:nbrOfAngleRealizations
 %             end
 
             %Compute the ML utility function for all potential angles - This new version is 50 times faster!
-            utilityfunction = abs(y'*B*Dh*a_varphi_range).^2./sum(abs(B*Dh*a_varphi_range).^2,1);
-
+            utilityfunction(:,itr) = transpose(abs(y'*B*Dh*a_varphi_range).^2./sum(abs(B*Dh*a_varphi_range).^2,1));
 
             %Extract the angle estimate
-            [~,maxind] = max(utilityfunction);
+            [~,maxind] = max(utilityfunction(:,itr));
 
 
             %Estimate the RIS configuration that (approximately) maximizes the SNR
@@ -101,7 +100,7 @@ for n1 = 1:nbrOfAngleRealizations
 
 
             %Find an extra RIS configuration to use for pilot transmission
-            if itr < M-1
+            if itr < Plim-1
 
                 %Find which angles in the grid-of-beams that haven't been used
                 unusedAngles = beamAngles(utilize==false);
@@ -127,27 +126,29 @@ for n1 = 1:nbrOfAngleRealizations
 
         end
 
+        if LS
         %LS estimation
-        DFT = fft(eye(M));
-        randomOrdering = randperm(M);
+            DFT = fft(eye(M));
+            randomOrdering = randperm(M);
+    
+            %Go through iterations by adding extra RIS configurations in the estimation
+            for itr = 1:M-1
+    
+                B_LS = transpose(DFT(:,randomOrdering(1:itr+1)));
 
-        %Go through iterations by adding extra RIS configurations in the estimation
-        for itr = 1:M-1
+                %Generate the received signal
+                y = sqrt(SNR_pilot)*B_LS*Dh*g + noise(1:itr+1,1);
+    
+                %Compute LS estimate without parametrization
+                g_LS = (Dh\(pinv(B_LS)*y))/sqrt(SNR_pilot);
+    
+                %Estimate the RIS configuration that (approximately) maximizes the SNR
+                RISconfig = angle(Dh*g_LS);
 
-            B_LS = transpose(DFT(:,randomOrdering(1:itr+1)));
-
-            %Generate the received signal
-            y = sqrt(SNR_pilot)*B_LS*Dh*g + noise(1:itr+1,1);
-
-            %Compute LS estimate without parametrization
-            g_LS = (Dh\(pinv(B_LS)*y))/sqrt(SNR_pilot);
-
-            %Estimate the RIS configuration that (approximately) maximizes the SNR
-            RISconfig = angle(Dh*g_LS);
-
-            %Compute the corresponding achievable rate
-            rate_LS(itr,n1,n2) = log2(1+SNR_data*abs(exp(-1i*RISconfig).'*Dh*g).^2);
-
+                %Compute the corresponding achievable rate
+                rate_LS(itr,n1,n2) = log2(1+SNR_data*abs(exp(-1i*RISconfig).'*Dh*g).^2);
+    
+            end
         end
 
     end
@@ -159,9 +160,9 @@ set(groot,'defaultAxesTickLabelInterpreter','latex');
 
 figure;
 hold on; box on; grid on;
-plot(2:M,mean(capacity)*ones(M-1,1),'r:','LineWidth',2)
-plot(2:M,mean(mean(rate_proposed,3),2),'k-','LineWidth',2)
-plot(2:M,mean(mean(rate_LS,3),2),'b-.','LineWidth',2)
+plot(2:Plim,mean(capacity)*ones(Plim-1,1),'r:','LineWidth',2)
+plot(2:Plim,mean(mean(rate_proposed,3),2),'k-','LineWidth',2)
+plot(2:Plim,mean(mean(rate_LS,3),2),'b-.','LineWidth',2)
 ax = gca;
 xlabel('Number of pilot transmissions','Interpreter','latex');
 ylabel('Average rate (bits/s/Hz)','Interpreter','latex');
