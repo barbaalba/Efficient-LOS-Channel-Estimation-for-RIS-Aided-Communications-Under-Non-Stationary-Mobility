@@ -19,4 +19,4 @@ arXiv (Open Access)
   * Björnson, Emil, and Parisa Ramezani. "Maximum Likelihood Channel Estimation for RIS-Aided Communications With LOS Channels." arXiv preprint arXiv:2209.10867 (2022).
 * **ML_ULA_direct_test.m**: To test ULA structured RIS + direct channel
 * **search2D.m**: To test the search over azimuth and elevation angles
-* **search2D_direct.m** To test the algorithm when RIS is equipped with UPA and the direct channel exists. 
+* **search2D_direct.m**: To test the algorithm when RIS is equipped with UPA and the direct channel exists. 
