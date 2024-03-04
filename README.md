@@ -1,4 +1,4 @@
-# Mobility_RIS
+# Efficient_LOS_Channel_Estimation_for_RIS_Aided_Communications_Under_Non_Stationary_Mobility
 These codes correspond to the following paper accepted in the ICC 2023 Conference. 
 
 IEEE
